@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  apache:
+    container_name: apache_server
+    image: httpd:latest
+    networks:
+      nt01:
+        ipv4_address: 10.0.0.10
+    ports:
+      - 80:80
+    volumes:
+      - apache2:/usr/local/apache2
+  bind9:
+    container_name: bind9_server
+    image: internetsystemsconsortium/bind9:9.16
+    networks:
+      nt01:
+        ipv4_address: 10.0.0.254
+    ports:
+      - 53:53
+    volumes:
+      - bind:/etc/bind
+  cliente:
+    container_name: apache_cliente
+    image: kasmweb/desktop-deluxe:1.9.0-rolling
+    networks:
+      nt01:
+        ipv4_address: 10.0.0.2
+    ports:
+      - 6901:6901
+    dns:
+      - 10.0.0.254  # contenedor de dns server
+    environment:
+      - VNC_PW=abc123.
+volumes:
+  bind:
+    external: true
+  apache2:
+    external: true
+networks:
+  nt01:
+    ipam: 
+      config:
+        - subnet: 10.0.0.0/24
