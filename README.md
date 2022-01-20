@@ -114,3 +114,43 @@ Include conf/extra/httpd-vhosts.conf #descomentar para que funcion VHOST
 
 #### Configuramos los dns en el bind
 ###### Creamos la zona, forwarders y el CNAME
+
+#### DNS
+```
+;
+; BIND data file for example.com
+;
+$TTL	604800
+@	IN	SOA	example.com root.example.com. (
+			      2		; Serial
+			 604800		; Refresh
+			  86400		; Retry
+			2419200		; Expire
+			 604800 )	; Negative Cache TTL
+;
+@	IN	NS	ns.example.com.
+@	IN	A	10.0.0.10
+@	IN	AAAA	::1
+ns  IN  A   10.0.0.254
+example.com. IN  A   10.0.0.10
+paxina1 IN  CNAME   example.com.
+paxina2 IN  CNAME   example.com.
+
+```
+#### ZONA
+
+```
+zone "example.com" {
+    type master;
+    file "/etc/bind/db.example.com";
+};
+
+```
+#### FORWARD
+
+```
+forwarders {
+	8.8.8.8; //google.com
+	8.8.4.4; //google.com
+	};
+```
