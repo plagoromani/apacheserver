@@ -79,3 +79,38 @@ networks:
         - subnet: 10.0.0.0/24
 
 ```
+
+ #### Httpd.conf apache_server volume
+ ###### Incluír los nuevos vhosts
+
+```
+
+# Virtual hosts
+Include conf/extra/httpd-vhosts.conf #descomentar para que funcion VHOST
+
+```
+
+#### Httpd-vhosts.conf apache_server volume
+###### Añadimos los nuevos VirtualHosts.
+
+```
+<VirtualHost *:80>
+    
+    DocumentRoot "/usr/local/apache2/htdocs/index1.html"
+    ServerName paxina1.example.com
+    ErrorLog "logs/dummy-host2.example.com-error_log"
+    CustomLog "logs/dummy-host2.example.com-access_log" common
+</VirtualHost>
+
+<VirtualHost *:80>
+    
+    DocumentRoot "/usr/local/apache2/htdocs/index2.html"
+    ServerName paxina2.example.com
+    ErrorLog "logs/dummy-host2.example.com-error_log"
+    CustomLog "logs/dummy-host2.example.com-access_log" common
+</VirtualHost>
+
+```
+
+#### Configuramos los dns en el bind
+###### Creamos la zona, forwarders y el CNAME
