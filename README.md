@@ -154,3 +154,95 @@ forwarders {
 	8.8.4.4; //google.com
 	};
 ```
+
+#### Crear dos Virtualhosts que securizar
+###### Añadimos los nuevos VirtualHosts.
+
+```
+<VirtualHost *:80>
+    
+    DocumentRoot "/usr/local/apache2/htdocs/index3.html"
+    ServerName paxina3.example.com
+    ErrorLog "logs/dummy-host2.example.com-error_log"
+    CustomLog "logs/dummy-host2.example.com-access_log" common
+</VirtualHost>
+
+<VirtualHost *:80>
+    
+    DocumentRoot "/usr/local/apache2/htdocs/index4.html"
+    ServerName paxina4.example.com
+    ErrorLog "logs/dummy-host2.example.com-error_log"
+    CustomLog "logs/dummy-host2.example.com-access_log" common
+</VirtualHost>
+
+```
+
+#### Generar certificados digitales
+###### Generamos certificados digitales para posteriormente aplicar securización ssl-hsts
+
+```
+apt get install openssl-server
+
+openssl genrsa -out nombre.key 2048
+
+openssl req -new -key nombre.key -out nombre.csr
+
+```
+###### Introducimos los datos necesarios y generamos el certificado. Una vez realizado el siguiente comando, podremos importarlo.
+```
+openssl x509 -req -days 365 -in nombre.csr -signkey nombre.key -out nombre.crt
+
+```
+
+#### Securización ssl-hsts
+###### Lo que realizaremos será securizar empleando el puerto 443 y hsts que nos permite obligar a los navegadores a usar comunicaciones https
+
+```
+<VirtualHost *:443>
+
+```
+###### Ponemos a la escucha el puerto 443 y añadimos los VirtualHost creados. Una vez realizado reiniciamos el servidor.
+```
+nano /etc/apache2/ports.conf
+```
+```
+Listen 443
+NameVirtualHost www.paxina3.example.com
+NameVirtualHost www.paxina4.example.com
+
+```
+
+#### Generar certificados ssl
+###### Generamos certificado ssl y lo añadimos.
+
+```
+openssl req -x509 -newkey rsa:2048 -keyout certificado.key -out certificado.pem -nodes -days 365
+```
+
+###### Añadimos el certificado ssl en los sites de cada web. Posteriormente reiniciamos el servidor apache2
+
+
+```
+SSLEngine ON
+SSLCertificateKeyFile /etc/ssl/certificado/certificado.key //ruta del certificado
+SSLCertificateFile /etc/ssl/certificado/certificado.pem
+
+```
+
+#### Habilitar HSTS
+###### Habilitamos hsts con a2enmod para decir a los navegadores que un sitio web solo se puede comunicar por https
+
+```
+a2enmod headers
+
+service apache2 restart
+
+nano /etc/apache2/sites-availables/paxina3.conf
+
+<VirtualHost *:443>
+//añadimos lo siguiente dentro del VirtualHost
+
+Headers always set Strict=Trasport-Security "max-age=999999999; includessubdomain"
+</VirtualHost>
+
+```
